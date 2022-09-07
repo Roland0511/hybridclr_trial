@@ -42,3 +42,7 @@
 /Release-Android
 /Release-Win32
 /Build-WebGL
+/Assembly-CSharp-Editor.csproj.user
+/Build-AndroidV8
+Build-Mac
+HybridCLRData/iOSBuild/build
