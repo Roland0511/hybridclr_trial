@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEditor;
+using UnityEditor.Android;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 using UnityEditor.Il2Cpp;
@@ -14,6 +15,9 @@ using UnityEngine;
 namespace HybridCLR.Editor.BuildProcessors
 {
     internal class CopyStrippedAOTAssemblies : IPostprocessBuildWithReport
+#if UNITY_ANDROID
+    , IPostGenerateGradleAndroidProject
+#endif
 #if !UNITY_2021_1_OR_NEWER
      , IIl2CppProcessor
 #endif
@@ -76,6 +80,18 @@ namespace HybridCLR.Editor.BuildProcessors
 #if UNITY_2021_1_OR_NEWER && !UNITY_IOS
             BuildTarget target = EditorUserBuildSettings.activeBuildTarget;
             CopyStripDlls(GetStripAssembliesDir2021(target), target);
+#endif
+        }
+        
+        public void OnPostGenerateGradleAndroidProject(string path)
+        {
+#if UNITY_2021_1_OR_NEWER && !UNITY_IOS
+            // Android平台下，导出为Gradle Project的时候，OnPostprocessBuild 不会被调用，因此需要在这里调用一次
+            if (EditorUserBuildSettings.exportAsGoogleAndroidProject)
+            {
+                BuildTarget target = EditorUserBuildSettings.activeBuildTarget;
+                CopyStripDlls(GetStripAssembliesDir2021(target), target);
+            }
 #endif
         }
     }
