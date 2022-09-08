@@ -43,10 +43,17 @@ public class LoadDll : MonoBehaviour
             UnityWebRequest www = UnityWebRequest.Get(dllPath);
             yield return www.SendWebRequest();
 
+#if UNITY_2020_1_OR_NEWER
             if (www.result != UnityWebRequest.Result.Success)
             {
                 Debug.Log(www.error);
             }
+#else
+            if (www.isHttpError || www.isNetworkError)
+            {
+                Debug.Log(www.error);
+            }
+#endif
             else
             {
                 // Or retrieve results as binary data
@@ -74,12 +81,10 @@ public class LoadDll : MonoBehaviour
     {
         AssetBundle dllAB = AssemblyAssetBundle = AssetBundle.LoadFromMemory(GetAbBytes("common"));
 #if !UNITY_EDITOR
-        TextAsset dllBytes1 = dllAB.LoadAsset<TextAsset>("HotFix.dll.bytes");
-        System.Reflection.Assembly.Load(dllBytes1.bytes);
-        TextAsset dllBytes2 = dllAB.LoadAsset<TextAsset>("HotFix2.dll.bytes");
-        gameAss = System.Reflection.Assembly.Load(dllBytes2.bytes);
+        TextAsset dllBytes = dllAB.LoadAsset<TextAsset>("Assembly-CSharp.dll.bytes");
+        gameAss = System.Reflection.Assembly.Load(dllBytes.bytes);
 #else
-        gameAss = AppDomain.CurrentDomain.GetAssemblies().First(assembly => assembly.GetName().Name == "HotFix2");
+        gameAss = AppDomain.CurrentDomain.GetAssemblies().First(assembly => assembly.GetName().Name == "Assembly-CSharp");
 #endif
 
         GameObject testPrefab = GameObject.Instantiate(dllAB.LoadAsset<UnityEngine.GameObject>("HotUpdatePrefab.prefab"));
